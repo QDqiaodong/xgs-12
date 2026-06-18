@@ -1,0 +1,131 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body,
+#app {
+  width: 100%;
+  height: 100%;
+  font-family: 'Helvetica Neue', Helvetica, 'PingFang SC', 'Hiragino Sans GB',
+    'Microsoft YaHei', '微软雅黑', Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  color: #333;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+ul,
+ol {
+  list-style: none;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #dcdfe6;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-track {
+  background-color: #f5f7fa;
+}
+
+.el-button--primary {
+  --el-button-bg-color: #1E3A8A;
+  --el-button-border-color: #1E3A8A;
+  --el-button-hover-bg-color: #3B5998;
+  --el-button-hover-border-color: #3B5998;
+  --el-button-active-bg-color: #1E3A8A;
+  --el-button-active-border-color: #1E3A8A;
+}
+
+.el-button--success {
+  --el-button-bg-color: #059669;
+  --el-button-border-color: #059669;
+  --el-button-hover-bg-color: #10B981;
+  --el-button-hover-border-color: #10B981;
+}
+
+.el-button--warning {
+  --el-button-bg-color: #F59E0B;
+  --el-button-border-color: #F59E0B;
+  --el-button-hover-bg-color: #FBBF24;
+  --el-button-hover-border-color: #FBBF24;
+}
+
+.el-button--danger {
+  --el-button-bg-color: #DC2626;
+  --el-button-border-color: #DC2626;
+  --el-button-hover-bg-color: #EF4444;
+  --el-button-hover-border-color: #EF4444;
+}
+
+.el-link--primary {
+  --el-link-text-color: #1E3A8A;
+  --el-link-hover-text-color: #3B5998;
+}
+
+.el-tag--primary {
+  --el-tag-bg-color: #EEF2FF;
+  --el-tag-border-color: #C7D2FE;
+  --el-tag-text-color: #1E3A8A;
+}
+
+.el-tag--success {
+  --el-tag-bg-color: #ECFDF5;
+  --el-tag-border-color: #A7F3D0;
+  --el-tag-text-color: #059669;
+}
+
+.el-tag--warning {
+  --el-tag-bg-color: #FFFBEB;
+  --el-tag-border-color: #FDE68A;
+  --el-tag-text-color: #F59E0B;
+}
+
+.el-tag--danger {
+  --el-tag-bg-color: #FEF2F2;
+  --el-tag-border-color: #FECACA;
+  --el-tag-text-color: #DC2626;
+}
+
+.el-card {
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.el-table {
+  --el-table-header-bg-color: #F3F4F6;
+  --el-table-header-text-color: #374151;
+}
+
+.el-input__wrapper {
+  border-radius: 6px;
+}
+
+.el-select .el-input__wrapper {
+  border-radius: 6px;
+}
+
+.el-dialog {
+  border-radius: 12px;
+}
+
+.el-message-box {
+  border-radius: 12px;
+}

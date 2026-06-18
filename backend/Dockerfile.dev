@@ -1,0 +1,18 @@
+FROM maven:3.9-eclipse-temurin-17
+
+WORKDIR /app
+
+COPY settings.xml /root/.m2/settings.xml
+
+COPY pom.xml ./
+
+RUN --mount=type=cache,target=/root/.m2 mvn dependency:go-offline -B
+
+COPY src ./src
+
+EXPOSE 8096
+
+ENV JAVA_TOOL_OPTIONS="-Dfile.encoding=UTF-8 -Dsun.jnu.encoding=UTF-8" \
+    LANG=C.UTF-8
+
+CMD ["mvn", "spring-boot:run", "-Dspring-boot.run.jvmArguments=-Dfile.encoding=UTF-8 -Dsun.jnu.encoding=UTF-8 -Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=*:5005"]

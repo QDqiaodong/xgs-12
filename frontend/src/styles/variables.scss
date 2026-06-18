@@ -1,0 +1,97 @@
+:root {
+  --primary-color: #1E3A8A;
+  --primary-light: #3B5998;
+  --primary-lighter: #60A5FA;
+  --primary-dark: #1E3A8A;
+  --success-color: #059669;
+  --success-light: #10B981;
+  --warning-color: #F59E0B;
+  --warning-light: #FBBF24;
+  --danger-color: #DC2626;
+  --danger-light: #EF4444;
+  --info-color: #6B7280;
+  --info-light: #9CA3AF;
+  --text-primary: #1F2937;
+  --text-regular: #374151;
+  --text-secondary: #6B7280;
+  --text-placeholder: #9CA3AF;
+  --border-color: #E5E7EB;
+  --border-color-light: #F3F4F6;
+  --border-color-lighter: #F9FAFB;
+  --background-color: #F3F4F6;
+  --card-background: #FFFFFF;
+  --sidebar-background: #1E3A8A;
+  --header-background: #FFFFFF;
+}
+
+.page-container {
+  padding: 20px;
+  background-color: var(--background-color);
+  min-height: calc(100vh - 60px);
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.text-primary {
+  color: var(--primary-color);
+}
+
+.text-success {
+  color: var(--success-color);
+}
+
+.text-warning {
+  color: var(--warning-color);
+}
+
+.text-danger {
+  color: var(--danger-color);
+}
+
+.text-info {
+  color: var(--info-color);
+}
+
+.mb-10 {
+  margin-bottom: 10px;
+}
+
+.mb-20 {
+  margin-bottom: 20px;
+}
+
+.mt-10 {
+  margin-top: 10px;
+}
+
+.mt-20 {
+  margin-top: 20px;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.text-right {
+  text-align: right;
+}
+
+.flex {
+  display: flex;
+}
+
+.flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.flex-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}

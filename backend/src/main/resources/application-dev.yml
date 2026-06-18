@@ -1,0 +1,50 @@
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:33112/retail_material?useUnicode=true&characterEncoding=UTF-8&connectionCollation=utf8mb4_unicode_ci&zeroDateTimeBehavior=convertToNull&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+    username: root
+    password: root123456
+    hikari:
+      minimum-idle: 5
+      maximum-pool-size: 20
+      idle-timeout: 30000
+      pool-name: MaterialHikariCP
+      max-lifetime: 1800000
+      connection-timeout: 30000
+      connection-test-query: SELECT 1
+
+  data:
+    redis:
+      host: localhost
+      port: 63112
+      password: 
+      database: 0
+      timeout: 10000ms
+      lettuce:
+        pool:
+          max-active: 8
+          max-wait: -1ms
+          max-idle: 8
+          min-idle: 0
+
+knife4j:
+  enable: true
+  openapi:
+    title: 连锁零售门店耗材进销存管控系统API
+    description: 连锁零售门店耗材进销存管控系统接口文档
+    version: 1.0.0
+    contact:
+      name: Material Management
+      email: support@retail.com
+    group:
+      default:
+        group-name: default
+        api-rule: package
+        api-rule-resources:
+          - com.retail.material.controller
+
+logging:
+  level:
+    com.retail.material: debug
+    org.springframework.web: debug
+    com.baomidou.mybatisplus: debug

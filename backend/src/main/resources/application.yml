@@ -1,0 +1,48 @@
+server:
+  port: 8096
+
+spring:
+  application:
+    name: material-management
+  profiles:
+    active: dev
+  servlet:
+    multipart:
+      max-file-size: 100MB
+      max-request-size: 100MB
+
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: GMT+8
+    serialization:
+      write-dates-as-timestamps: false
+
+mybatis-plus:
+  mapper-locations: classpath*:/mapper/**/*.xml
+  type-aliases-package: com.retail.material.entity
+  configuration:
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  global-config:
+    db-config:
+      id-type: auto
+      logic-delete-field: deleted
+      logic-delete-value: 1
+      logic-not-delete-value: 0
+
+knife4j:
+  enable: true
+  setting:
+    language: zh_cn
+    swagger-model-name: 实体类列表
+
+jwt:
+  secret: MaterialManagementSystemSecretKey2024ForJWTEncryptionAndDecryption
+  expiration: 86400000
+  header: Authorization
+  prefix: Bearer
+
+logging:
+  level:
+    com.retail.material: debug
+    org.springframework.security: info
