@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router'
 import Layout from '@/components/layout/Layout.vue'
+import { useUserStore } from '@/stores/user'
 
 const routes: RouteRecordRaw[] = [
   {
@@ -202,11 +203,40 @@ const router = createRouter({
   routes
 })
 
-router.beforeEach((to, _from, next) => {
+router.beforeEach(async (to, _from, next) => {
   const title = to.meta.title as string
   if (title) {
     document.title = `${title} - 连锁零售门店耗材进销存管控系统`
   }
+
+  const userStore = useUserStore()
+  const isLoginPage = to.path === '/login'
+  const hasToken = !!userStore.token
+
+  if (isLoginPage) {
+    if (hasToken) {
+      next('/')
+    } else {
+      next()
+    }
+    return
+  }
+
+  if (!hasToken) {
+    next('/login')
+    return
+  }
+
+  if (!userStore.userInfo) {
+    await userStore.initUserInfo()
+  }
+
+  if (!userStore.userInfo) {
+    userStore.logout()
+    next('/login')
+    return
+  }
+
   next()
 })
 

@@ -98,7 +98,7 @@ import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import type { FormInstance, FormRules } from 'element-plus'
 import { useUserStore } from '@/stores/user'
-import { authApi } from '@/api/auth'
+import { authApi, transformLoginResult } from '@/api/auth'
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -201,8 +201,11 @@ const handleLogin = async () => {
           password: form.password
         })
         
-        userStore.setToken(res.data.token)
-        userStore.setUserInfo(res.data.userInfo)
+        const { token, userInfo } = transformLoginResult(res.data)
+        userStore.setToken(token)
+        userStore.setUserInfo(userInfo)
+        
+        await userStore.fetchUserInfo()
         
         if (rememberMe.value) {
           localStorage.setItem('rememberedUsername', form.username)

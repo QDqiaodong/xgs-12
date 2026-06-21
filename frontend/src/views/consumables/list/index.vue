@@ -2,6 +2,14 @@
   <div class="page-container">
     <el-card class="search-card">
       <el-form :model="searchForm" inline class="search-form">
+        <el-form-item label="耗材编码">
+          <el-input
+            v-model="searchForm.code"
+            placeholder="请输入耗材编码"
+            clearable
+            @keyup.enter="handleSearch"
+          />
+        </el-form-item>
         <el-form-item label="耗材名称">
           <el-input
             v-model="searchForm.name"
@@ -12,18 +20,18 @@
         </el-form-item>
         <el-form-item label="耗材分类">
           <el-select v-model="searchForm.category" placeholder="请选择分类" clearable>
-            <el-option label="办公用品" value="办公用品" />
-            <el-option label="清洁用品" value="清洁用品" />
-            <el-option label="包装材料" value="包装材料" />
-            <el-option label="维修工具" value="维修工具" />
-            <el-option label="其他" value="其他" />
+            <el-option label="办公用品" value="packaging" />
+            <el-option label="清洁用品" value="cleaning" />
+            <el-option label="包装材料" value="equipment" />
+            <el-option label="其他" value="other" />
           </el-select>
         </el-form-item>
-        <el-form-item label="库存状态">
+        <el-form-item label="状态">
           <el-select v-model="searchForm.status" placeholder="请选择状态" clearable>
-            <el-option label="正常" value="normal" />
-            <el-option label="预警" value="warning" />
-            <el-option label="缺货" value="shortage" />
+            <el-option label="禁用" value="0" />
+            <el-option label="正常" value="1" />
+            <el-option label="预警" value="2" />
+            <el-option label="过期" value="3" />
           </el-select>
         </el-form-item>
         <el-form-item>
@@ -82,7 +90,7 @@
         <el-table-column prop="name" label="耗材名称" min-width="150" />
         <el-table-column prop="category" label="分类" width="120">
           <template #default="{ row }">
-            <el-tag>{{ row.category }}</el-tag>
+            <el-tag>{{ getCategoryText(row.category) }}</el-tag>
           </template>
         </el-table-column>
         <el-table-column prop="specification" label="规格" width="120" />
@@ -163,11 +171,10 @@
         </el-form-item>
         <el-form-item label="分类" prop="category">
           <el-select v-model="formData.category" placeholder="请选择分类" :disabled="isView">
-            <el-option label="办公用品" value="办公用品" />
-            <el-option label="清洁用品" value="清洁用品" />
-            <el-option label="包装材料" value="包装材料" />
-            <el-option label="维修工具" value="维修工具" />
-            <el-option label="其他" value="其他" />
+            <el-option label="办公用品" value="packaging" />
+            <el-option label="清洁用品" value="cleaning" />
+            <el-option label="包装材料" value="equipment" />
+            <el-option label="其他" value="other" />
           </el-select>
         </el-form-item>
         <el-form-item label="规格" prop="specification">
@@ -225,20 +232,22 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import type { FormInstance, FormRules } from 'element-plus'
 import dayjs from 'dayjs'
+import { consumableApi, type Consumable } from '@/api/consumable'
 
 const tableRef = ref()
 const formRef = ref<FormInstance>()
 const loading = ref(false)
 const submitLoading = ref(false)
 const dialogVisible = ref(false)
-const selectedRows = ref<any[]>([])
+const selectedRows = ref<Consumable[]>([])
 
 const searchForm = reactive({
   name: '',
+  code: '',
   category: '',
   status: ''
 })
@@ -246,7 +255,7 @@ const searchForm = reactive({
 const pagination = reactive({
   pageNum: 1,
   pageSize: 10,
-  total: 100
+  total: 0
 })
 
 const sortParams = reactive({
@@ -265,7 +274,7 @@ const dialogTitle = computed(() => {
   return titles[dialogType.value]
 })
 
-const formData = reactive({
+const formData = reactive<Partial<Consumable>>({
   id: 0,
   code: '',
   name: '',
@@ -274,7 +283,8 @@ const formData = reactive({
   unit: '',
   price: 0,
   warningStock: 0,
-  remark: ''
+  stock: 0,
+  status: 1
 })
 
 const formRules: FormRules = {
@@ -292,58 +302,81 @@ const formRules: FormRules = {
   warningStock: [{ required: true, message: '请输入预警库存值', trigger: 'blur' }]
 }
 
-const tableData = ref([
-  { id: 1, code: 'HC001', name: 'A4打印纸', category: '办公用品', specification: '70g/500张', unit: '包', price: 25.00, stock: 50, warningStock: 100, updatedAt: '2024-01-15 10:30:00' },
-  { id: 2, code: 'HC002', name: '签字笔', category: '办公用品', specification: '0.5mm黑色', unit: '支', price: 2.50, stock: 200, warningStock: 500, updatedAt: '2024-01-14 15:20:00' },
-  { id: 3, code: 'HC003', name: '胶带', category: '包装材料', specification: '48mm宽', unit: '卷', price: 8.00, stock: 30, warningStock: 50, updatedAt: '2024-01-13 09:15:00' },
-  { id: 4, code: 'HC004', name: '文件夹', category: '办公用品', specification: 'A4双夹', unit: '个', price: 15.00, stock: 15, warningStock: 30, updatedAt: '2024-01-12 14:45:00' },
-  { id: 5, code: 'HC005', name: '订书机', category: '办公用品', specification: '标准型', unit: '个', price: 35.00, stock: 8, warningStock: 20, updatedAt: '2024-01-11 11:30:00' },
-  { id: 6, code: 'HC006', name: '清洁剂', category: '清洁用品', specification: '500ml', unit: '瓶', price: 18.00, stock: 45, warningStock: 30, updatedAt: '2024-01-10 16:20:00' },
-  { id: 7, code: 'HC007', name: '垃圾袋', category: '清洁用品', specification: '大号黑色', unit: '卷', price: 12.00, stock: 80, warningStock: 50, updatedAt: '2024-01-09 08:40:00' },
-  { id: 8, code: 'HC008', name: '纸箱', category: '包装材料', specification: '40x30x20cm', unit: '个', price: 5.00, stock: 150, warningStock: 100, updatedAt: '2024-01-08 13:10:00' },
-  { id: 9, code: 'HC009', name: '螺丝刀套装', category: '维修工具', specification: '6件套', unit: '套', price: 45.00, stock: 5, warningStock: 10, updatedAt: '2024-01-07 10:50:00' },
-  { id: 10, code: 'HC010', name: '胶水', category: '办公用品', specification: '50ml', unit: '瓶', price: 6.00, stock: 60, warningStock: 40, updatedAt: '2024-01-06 15:35:00' }
-])
+const tableData = ref<Consumable[]>([])
 
 const formatDate = (date: string) => {
   return dayjs(date).format('YYYY-MM-DD HH:mm')
 }
 
-const getStockClass = (row: any) => {
+const getStockClass = (row: Consumable) => {
   if (row.stock <= 0) return 'stock-shortage'
   if (row.stock <= row.warningStock) return 'stock-warning'
   return 'stock-normal'
 }
 
-const getStatusType = (row: any) => {
+const getStatusType = (row: Consumable) => {
+  if (row.status === 0) return 'info'
   if (row.stock <= 0) return 'danger'
   if (row.stock <= row.warningStock) return 'warning'
   return 'success'
 }
 
-const getStatusText = (row: any) => {
+const getStatusText = (row: Consumable) => {
+  if (row.status === 0) return '禁用'
   if (row.stock <= 0) return '缺货'
   if (row.stock <= row.warningStock) return '预警'
   return '正常'
 }
 
+const categoryMap: Record<string, string> = {
+  packaging: '办公用品',
+  cleaning: '清洁用品',
+  equipment: '包装材料',
+  other: '其他'
+}
+
+const getCategoryText = (category: string) => {
+  return categoryMap[category] || category
+}
+
+const fetchList = async () => {
+  loading.value = true
+  try {
+    const res = await consumableApi.getList({
+      name: searchForm.name,
+      code: searchForm.code,
+      category: searchForm.category,
+      status: searchForm.status ? parseInt(searchForm.status) : undefined,
+      pageNum: pagination.pageNum,
+      pageSize: pagination.pageSize
+    })
+    if (res.code === 200 && res.data) {
+      tableData.value = res.data.records || []
+      pagination.total = res.data.total || 0
+    }
+  } catch (error) {
+    console.error('获取耗材列表失败:', error)
+    ElMessage.error('获取耗材列表失败')
+  } finally {
+    loading.value = false
+  }
+}
+
 const handleSearch = () => {
   pagination.pageNum = 1
-  loading.value = true
-  setTimeout(() => {
-    loading.value = false
-  }, 500)
+  fetchList()
 }
 
 const handleReset = () => {
   searchForm.name = ''
+  searchForm.code = ''
   searchForm.category = ''
   searchForm.status = ''
   pagination.pageNum = 1
   handleSearch()
 }
 
-const handleSelectionChange = (rows: any[]) => {
+const handleSelectionChange = (rows: Consumable[]) => {
   selectedRows.value = rows
 }
 
@@ -372,7 +405,8 @@ const resetForm = () => {
   formData.unit = ''
   formData.price = 0
   formData.warningStock = 0
-  formData.remark = ''
+  formData.stock = 0
+  formData.status = 1
   formRef.value?.resetFields()
 }
 
@@ -382,19 +416,35 @@ const handleAdd = () => {
   dialogVisible.value = true
 }
 
-const handleView = (row: any) => {
+const handleView = async (row: Consumable) => {
   dialogType.value = 'view'
-  Object.assign(formData, row)
+  try {
+    const res = await consumableApi.getById(row.id)
+    if (res.code === 200 && res.data) {
+      Object.assign(formData, res.data)
+    }
+  } catch (error) {
+    console.error('获取耗材详情失败:', error)
+    Object.assign(formData, row)
+  }
   dialogVisible.value = true
 }
 
-const handleEdit = (row: any) => {
+const handleEdit = async (row: Consumable) => {
   dialogType.value = 'edit'
-  Object.assign(formData, row)
+  try {
+    const res = await consumableApi.getById(row.id)
+    if (res.code === 200 && res.data) {
+      Object.assign(formData, res.data)
+    }
+  } catch (error) {
+    console.error('获取耗材详情失败:', error)
+    Object.assign(formData, row)
+  }
   dialogVisible.value = true
 }
 
-const handleDelete = (row: any) => {
+const handleDelete = (row: Consumable) => {
   ElMessageBox.confirm(
     `确定要删除耗材"${row.name}"吗？`,
     '删除确认',
@@ -403,13 +453,17 @@ const handleDelete = (row: any) => {
       cancelButtonText: '取消',
       type: 'warning'
     }
-  ).then(() => {
-    const index = tableData.value.findIndex(item => item.id === row.id)
-    if (index > -1) {
-      tableData.value.splice(index, 1)
-      pagination.total -= 1
+  ).then(async () => {
+    try {
+      const res = await consumableApi.delete(row.id)
+      if (res.code === 200) {
+        ElMessage.success('删除成功')
+        fetchList()
+      }
+    } catch (error) {
+      console.error('删除耗材失败:', error)
+      ElMessage.error('删除失败')
     }
-    ElMessage.success('删除成功')
   }).catch(() => {})
 }
 
@@ -422,12 +476,18 @@ const handleBatchDelete = () => {
       cancelButtonText: '取消',
       type: 'warning'
     }
-  ).then(() => {
-    const ids = selectedRows.value.map(item => item.id)
-    tableData.value = tableData.value.filter(item => !ids.includes(item.id))
-    pagination.total -= ids.length
-    selectedRows.value = []
-    ElMessage.success('批量删除成功')
+  ).then(async () => {
+    try {
+      for (const row of selectedRows.value) {
+        await consumableApi.delete(row.id)
+      }
+      selectedRows.value = []
+      ElMessage.success('批量删除成功')
+      fetchList()
+    } catch (error) {
+      console.error('批量删除耗材失败:', error)
+      ElMessage.error('批量删除失败')
+    }
   }).catch(() => {})
 }
 
@@ -442,37 +502,38 @@ const handleExport = () => {
 const handleSubmit = async () => {
   if (!formRef.value) return
   
-  await formRef.value.validate((valid) => {
+  await formRef.value.validate(async (valid) => {
     if (valid) {
       submitLoading.value = true
-      setTimeout(() => {
+      try {
         if (dialogType.value === 'add') {
-          const newItem = {
-            ...formData,
-            id: tableData.value.length + 1,
-            stock: 0,
-            updatedAt: dayjs().format('YYYY-MM-DD HH:mm:ss')
+          const res = await consumableApi.create(formData)
+          if (res.code === 200) {
+            ElMessage.success('新增成功')
+            dialogVisible.value = false
+            fetchList()
           }
-          tableData.value.unshift(newItem)
-          pagination.total += 1
-          ElMessage.success('新增成功')
         } else {
-          const index = tableData.value.findIndex(item => item.id === formData.id)
-          if (index > -1) {
-            tableData.value[index] = {
-              ...tableData.value[index],
-              ...formData,
-              updatedAt: dayjs().format('YYYY-MM-DD HH:mm:ss')
-            }
+          const res = await consumableApi.update(formData.id!, formData)
+          if (res.code === 200) {
+            ElMessage.success('编辑成功')
+            dialogVisible.value = false
+            fetchList()
           }
-          ElMessage.success('编辑成功')
         }
+      } catch (error) {
+        console.error('提交失败:', error)
+        ElMessage.error('提交失败')
+      } finally {
         submitLoading.value = false
-        dialogVisible.value = false
-      }, 500)
+      }
     }
   })
 }
+
+onMounted(() => {
+  fetchList()
+})
 </script>
 
 <style scoped lang="scss">
