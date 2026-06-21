@@ -112,6 +112,10 @@
             <el-icon><View /></el-icon>
             查看详情
           </el-button>
+          <el-button type="warning" size="small" @click="openPrintPreview(order)">
+            <el-icon><Printer /></el-icon>
+            打印预览
+          </el-button>
           <el-button type="success" size="small" @click="openReceiveDialog(order)">
             <el-icon><Check /></el-icon>
             确认签收
@@ -215,6 +219,111 @@
 
       <template #footer>
         <el-button @click="detailDialogVisible = false">关闭</el-button>
+        <el-button type="warning" @click="openPrintPreviewFromDetail">
+          <el-icon><Printer /></el-icon>
+          打印预览
+        </el-button>
+      </template>
+    </el-dialog>
+
+    <el-dialog
+      v-model="printDialogVisible"
+      title="调拨单打印预览"
+      width="900px"
+      destroy-on-close
+      class="print-dialog"
+    >
+      <div class="print-container">
+        <div class="print-header">
+          <div class="print-title">耗材调拨单</div>
+          <div class="print-subtitle">随货交接单</div>
+        </div>
+
+        <el-descriptions :column="2" border size="small" class="print-info">
+          <el-descriptions-item label="调拨单号">
+            <span class="print-order-no">{{ printOrder?.orderNo }}</span>
+          </el-descriptions-item>
+          <el-descriptions-item label="打印日期">
+            {{ currentDate }}
+          </el-descriptions-item>
+          <el-descriptions-item label="调出门店">
+            {{ printOrder?.sourceStoreName }}
+          </el-descriptions-item>
+          <el-descriptions-item label="调入门店">
+            {{ printOrder?.targetStoreName }}
+          </el-descriptions-item>
+          <el-descriptions-item label="出库人">
+            {{ printOrder?.operator }}
+          </el-descriptions-item>
+          <el-descriptions-item label="签收人">
+            签字：____________
+          </el-descriptions-item>
+        </el-descriptions>
+
+        <div class="print-items-title">耗材明细</div>
+        <el-table :data="printOrder?.items" border size="small" class="print-table">
+          <el-table-column type="index" label="序号" width="60" align="center" />
+          <el-table-column prop="consumableName" label="耗材名称" min-width="150" />
+          <el-table-column prop="specification" label="规格" width="100" align="center" />
+          <el-table-column prop="unit" label="单位" width="70" align="center" />
+          <el-table-column prop="quantity" label="应收数量" width="100" align="center" />
+          <el-table-column label="实收数量" width="100" align="center">
+            <template #default>
+              <span class="blank-cell"></span>
+            </template>
+          </el-table-column>
+          <el-table-column label="单价(元)" width="90" align="right">
+            <template #default="{ row }">
+              ¥{{ row.unitPrice.toFixed(2) }}
+            </template>
+          </el-table-column>
+          <el-table-column label="金额(元)" width="100" align="right">
+            <template #default="{ row }">
+              ¥{{ row.totalPrice.toFixed(2) }}
+            </template>
+          </el-table-column>
+        </el-table>
+
+        <div class="print-summary">
+          <div class="summary-item">
+            <span class="label">合计种类：</span>
+            <span class="value">{{ printOrder?.items?.length || 0 }} 种</span>
+          </div>
+          <div class="summary-item">
+            <span class="label">合计数量：</span>
+            <span class="value">{{ printOrder?.totalQuantity }} 件</span>
+          </div>
+          <div class="summary-item highlight">
+            <span class="label">合计金额：</span>
+            <span class="value">¥{{ printOrder?.totalAmount?.toFixed(2) }}</span>
+          </div>
+        </div>
+
+        <div class="print-signature">
+          <div class="signature-item">
+            <span class="signature-label">调出门店经办人：</span>
+            <span class="signature-line">签字：____________</span>
+            <span class="signature-date">日期：____________</span>
+          </div>
+          <div class="signature-item">
+            <span class="signature-label">调入门店签收人：</span>
+            <span class="signature-line">签字：____________</span>
+            <span class="signature-date">日期：____________</span>
+          </div>
+        </div>
+
+        <div class="print-remark">
+          <div class="remark-title">备注：</div>
+          <div class="remark-content">{{ printOrder?.transportType || '无' }}</div>
+        </div>
+      </div>
+
+      <template #footer>
+        <el-button @click="printDialogVisible = false">关闭</el-button>
+        <el-button type="primary" @click="handlePrint">
+          <el-icon><Printer /></el-icon>
+          打印
+        </el-button>
       </template>
     </el-dialog>
 
@@ -341,6 +450,7 @@
 import { computed, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import type { FormInstance, FormRules } from 'element-plus'
+import { Printer } from '@element-plus/icons-vue'
 import dayjs from 'dayjs'
 
 interface TransferItem {
@@ -400,9 +510,15 @@ const receiveRules: FormRules = {
 }
 
 const detailDialogVisible = ref(false)
+const printDialogVisible = ref(false)
 const receiveDialogVisible = ref(false)
 const receiveLoading = ref(false)
 const currentOrder = ref<TransferOrder | null>(null)
+const printOrder = ref<TransferOrder | null>(null)
+
+const currentDate = computed(() => {
+  return dayjs().format('YYYY-MM-DD HH:mm:ss')
+})
 
 const pendingList = ref<TransferOrder[]>([
   {
@@ -473,6 +589,308 @@ const handleReset = () => {
 const viewDetail = (order: TransferOrder) => {
   currentOrder.value = cloneOrder(order)
   detailDialogVisible.value = true
+}
+
+const openPrintPreview = (order: TransferOrder) => {
+  printOrder.value = cloneOrder(order)
+  printDialogVisible.value = true
+}
+
+const openPrintPreviewFromDetail = () => {
+  if (currentOrder.value) {
+    printOrder.value = cloneOrder(currentOrder.value)
+    detailDialogVisible.value = false
+    printDialogVisible.value = true
+  }
+}
+
+const generatePrintHTML = () => {
+  if (!printOrder.value) return ''
+
+  const order = printOrder.value
+  const items = order.items || []
+
+  let itemsHTML = ''
+  items.forEach((item, index) => {
+    itemsHTML += `
+      <tr>
+        <td>${index + 1}</td>
+        <td class="text-left">${item.consumableName}</td>
+        <td>${item.specification || '-'}</td>
+        <td>${item.unit}</td>
+        <td>${item.quantity}</td>
+        <td></td>
+        <td class="text-right">¥${item.unitPrice.toFixed(2)}</td>
+        <td class="text-right">¥${item.totalPrice.toFixed(2)}</td>
+      </tr>
+    `
+  })
+
+  return `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <title>耗材调拨单 - ${order.orderNo}</title>
+      <style>
+        * {
+          margin: 0;
+          padding: 0;
+          box-sizing: border-box;
+        }
+        body {
+          font-family: 'Microsoft YaHei', 'SimSun', sans-serif;
+          font-size: 14px;
+          color: #1F2937;
+          padding: 30px;
+          background: #fff;
+        }
+        .print-header {
+          text-align: center;
+          margin-bottom: 24px;
+          padding-bottom: 16px;
+          border-bottom: 2px solid #1E3A8A;
+        }
+        .print-title {
+          font-size: 26px;
+          font-weight: 700;
+          color: #1E3A8A;
+          margin-bottom: 8px;
+          letter-spacing: 4px;
+        }
+        .print-subtitle {
+          font-size: 16px;
+          color: #6B7280;
+          letter-spacing: 2px;
+        }
+        .print-info {
+          width: 100%;
+          border-collapse: collapse;
+          margin-bottom: 24px;
+        }
+        .print-info td {
+          border: 1px solid #D1D5DB;
+          padding: 10px 12px;
+        }
+        .print-info .label {
+          background-color: #F3F4F6;
+          font-weight: 600;
+          width: 100px;
+          color: #374151;
+        }
+        .print-order-no {
+          font-weight: 700;
+          color: #1E3A8A;
+          font-size: 15px;
+        }
+        .print-items-title {
+          font-size: 16px;
+          font-weight: 600;
+          color: #1F2937;
+          margin-bottom: 12px;
+          padding-left: 12px;
+          border-left: 4px solid #1E3A8A;
+        }
+        .print-table {
+          width: 100%;
+          border-collapse: collapse;
+          margin-bottom: 16px;
+        }
+        .print-table th {
+          background-color: #F3F4F6;
+          border: 1px solid #D1D5DB;
+          padding: 10px 8px;
+          text-align: center;
+          font-weight: 600;
+          color: #374151;
+        }
+        .print-table td {
+          border: 1px solid #D1D5DB;
+          padding: 10px 8px;
+          text-align: center;
+        }
+        .print-table .text-right {
+          text-align: right;
+        }
+        .print-table .text-left {
+          text-align: left;
+        }
+        .print-summary {
+          display: flex;
+          justify-content: flex-end;
+          gap: 40px;
+          margin-bottom: 28px;
+          padding: 14px 20px 14px 0;
+          border-top: 1px solid #D1D5DB;
+          border-bottom: 1px solid #D1D5DB;
+          background: linear-gradient(135deg, #F9FAFB 0%, #F3F4F6 100%);
+        }
+        .summary-item {
+          display: flex;
+          align-items: center;
+        }
+        .summary-item .label {
+          color: #6B7280;
+          font-size: 14px;
+        }
+        .summary-item .value {
+          font-size: 16px;
+          font-weight: 600;
+          color: #1F2937;
+          margin-left: 8px;
+        }
+        .summary-item.highlight .value {
+          color: #1E3A8A;
+          font-size: 18px;
+        }
+        .print-signature {
+          margin-top: 36px;
+          display: flex;
+          justify-content: space-between;
+        }
+        .signature-item {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+        }
+        .signature-label {
+          font-weight: 600;
+          color: #374151;
+          font-size: 14px;
+        }
+        .signature-line,
+        .signature-date {
+          color: #6B7280;
+          font-size: 14px;
+        }
+        .print-remark {
+          margin-top: 28px;
+          padding: 16px;
+          background-color: #F9FAFB;
+          border: 1px dashed #D1D5DB;
+          border-radius: 6px;
+        }
+        .remark-title {
+          font-weight: 600;
+          color: #374151;
+          margin-bottom: 8px;
+          font-size: 14px;
+        }
+        .remark-content {
+          color: #4B5563;
+          font-size: 14px;
+          line-height: 1.6;
+        }
+        @media print {
+          body {
+            padding: 15px;
+          }
+          @page {
+            size: A4;
+            margin: 15mm;
+          }
+        }
+      </style>
+    </head>
+    <body>
+      <div class="print-header">
+        <div class="print-title">耗材调拨单</div>
+        <div class="print-subtitle">随货交接单</div>
+      </div>
+
+      <table class="print-info">
+        <tr>
+          <td class="label">调拨单号</td>
+          <td><span class="print-order-no">${order.orderNo}</span></td>
+          <td class="label">打印日期</td>
+          <td>${currentDate.value}</td>
+        </tr>
+        <tr>
+          <td class="label">调出门店</td>
+          <td>${order.sourceStoreName}</td>
+          <td class="label">调入门店</td>
+          <td>${order.targetStoreName}</td>
+        </tr>
+        <tr>
+          <td class="label">出库人</td>
+          <td>${order.operator || '-'}</td>
+          <td class="label">签收人</td>
+          <td>____________</td>
+        </tr>
+      </table>
+
+      <div class="print-items-title">耗材明细</div>
+      <table class="print-table">
+        <thead>
+          <tr>
+            <th style="width: 60px">序号</th>
+            <th>耗材名称</th>
+            <th style="width: 100px">规格</th>
+            <th style="width: 70px">单位</th>
+            <th style="width: 90px">应收数量</th>
+            <th style="width: 90px">实收数量</th>
+            <th style="width: 90px">单价(元)</th>
+            <th style="width: 100px">金额(元)</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${itemsHTML}
+        </tbody>
+      </table>
+
+      <div class="print-summary">
+        <div class="summary-item">
+          <span class="label">合计种类：</span>
+          <span class="value">${items.length} 种</span>
+        </div>
+        <div class="summary-item">
+          <span class="label">合计数量：</span>
+          <span class="value">${order.totalQuantity} 件</span>
+        </div>
+        <div class="summary-item highlight">
+          <span class="label">合计金额：</span>
+          <span class="value">¥${order.totalAmount.toFixed(2)}</span>
+        </div>
+      </div>
+
+      <div class="print-signature">
+        <div class="signature-item">
+          <span class="signature-label">调出门店经办人：</span>
+          <span class="signature-line">签字：____________</span>
+          <span class="signature-date">日期：____________</span>
+        </div>
+        <div class="signature-item">
+          <span class="signature-label">调入门店签收人：</span>
+          <span class="signature-line">签字：____________</span>
+          <span class="signature-date">日期：____________</span>
+        </div>
+      </div>
+
+      <div class="print-remark">
+        <div class="remark-title">运输方式：</div>
+        <div class="remark-content">${order.transportType || '自提'}</div>
+      </div>
+    </body>
+    </html>
+  `
+}
+
+const handlePrint = () => {
+  const printHTML = generatePrintHTML()
+  if (!printHTML) return
+
+  const printWindow = window.open('', '_blank')
+  if (!printWindow) {
+    ElMessage.warning('请允许弹出窗口以进行打印')
+    return
+  }
+
+  printWindow.document.write(printHTML)
+  printWindow.document.close()
+  printWindow.focus()
+  
+  setTimeout(() => {
+    printWindow.print()
+  }, 300)
 }
 
 const openReceiveDialog = (order: TransferOrder) => {
@@ -639,5 +1057,161 @@ const cloneOrder = (order: TransferOrder): TransferOrder => {
 .diff-negative {
   color: #059669;
   font-weight: 600;
+}
+
+:deep(.print-dialog) {
+  .el-dialog__body {
+    padding: 20px;
+  }
+}
+
+.print-container {
+  background: #fff;
+  padding: 30px;
+  border: 1px solid #E5E7EB;
+}
+
+.print-header {
+  text-align: center;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid #1E3A8A;
+}
+
+.print-title {
+  font-size: 26px;
+  font-weight: 700;
+  color: #1E3A8A;
+  margin-bottom: 8px;
+  letter-spacing: 4px;
+}
+
+.print-subtitle {
+  font-size: 16px;
+  color: #6B7280;
+  letter-spacing: 2px;
+}
+
+.print-info {
+  margin-bottom: 24px;
+  
+  :deep(.el-descriptions__label) {
+    width: 100px;
+    font-weight: 600;
+    background-color: #F3F4F6;
+  }
+}
+
+.print-order-no {
+  font-weight: 700;
+  color: #1E3A8A;
+  font-size: 15px;
+}
+
+.print-items-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1F2937;
+  margin-bottom: 12px;
+  padding-left: 12px;
+  border-left: 4px solid #1E3A8A;
+}
+
+.print-table {
+  margin-bottom: 16px;
+  
+  :deep(.el-table__header) {
+    th {
+      background-color: #F3F4F6;
+      color: #374151;
+      font-weight: 600;
+    }
+  }
+}
+
+.blank-cell {
+  display: inline-block;
+  width: 60px;
+  height: 20px;
+  border-bottom: 1px dashed #9CA3AF;
+}
+
+.print-summary {
+  display: flex;
+  justify-content: flex-end;
+  gap: 40px;
+  margin-bottom: 28px;
+  padding: 14px 0;
+  border-top: 1px solid #D1D5DB;
+  border-bottom: 1px solid #D1D5DB;
+  background: linear-gradient(135deg, #F9FAFB 0%, #F3F4F6 100%);
+  padding-right: 20px;
+  
+  .summary-item {
+    display: flex;
+    align-items: center;
+    
+    .label {
+      font-size: 14px;
+      color: #6B7280;
+    }
+    
+    .value {
+      font-size: 16px;
+      font-weight: 600;
+      color: #1F2937;
+      margin-left: 8px;
+    }
+    
+    &.highlight .value {
+      color: #1E3A8A;
+      font-size: 18px;
+    }
+  }
+}
+
+.print-signature {
+  margin-top: 36px;
+  display: flex;
+  justify-content: space-between;
+  
+  .signature-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    
+    .signature-label {
+      font-weight: 600;
+      color: #374151;
+      font-size: 14px;
+    }
+    
+    .signature-line,
+    .signature-date {
+      color: #6B7280;
+      font-size: 14px;
+    }
+  }
+}
+
+.print-remark {
+  margin-top: 28px;
+  padding: 16px;
+  background-color: #F9FAFB;
+  border: 1px dashed #D1D5DB;
+  border-radius: 6px;
+  
+  .remark-title {
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 8px;
+    font-size: 14px;
+  }
+  
+  .remark-content {
+    color: #4B5563;
+    font-size: 14px;
+    line-height: 1.6;
+  }
 }
 </style>

@@ -1,9 +1,9 @@
 #!/bin/bash
 
-FRONTEND_PORT=8086
-BACKEND_PORT=8096
-MYSQL_PORT=3312
-REDIS_PORT=6385
+FRONTEND_PORT=${FRONTEND_PORT:-18112}
+BACKEND_PORT=${BACKEND_PORT:-19112}
+MYSQL_PORT=${MYSQL_PORT:-33112}
+REDIS_PORT=${REDIS_PORT:-63112}
 
 check_and_adjust_port() {
     local port=$1
@@ -15,7 +15,7 @@ check_and_adjust_port() {
             echo $port
             return 0
         fi
-        echo "端口 $port 已被占用，尝试下一个端口..."
+        echo "端口 $port 已被占用，尝试下一个端口..." >&2
         port=$((port + 1))
         attempt=$((attempt + 1))
     done
@@ -33,6 +33,13 @@ export FRONTEND_PORT
 export BACKEND_PORT
 export MYSQL_PORT
 export REDIS_PORT
+
+cat > .env.runtime <<EOF
+FRONTEND_PORT=${FRONTEND_PORT}
+BACKEND_PORT=${BACKEND_PORT}
+MYSQL_PORT=${MYSQL_PORT}
+REDIS_PORT=${REDIS_PORT}
+EOF
 
 echo "最终端口配置："
 echo "前端端口: $FRONTEND_PORT"

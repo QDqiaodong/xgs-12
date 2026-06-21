@@ -6,7 +6,7 @@ RUN npm config set registry https://mirrors.ustc.edu.cn/npm/
 
 COPY package*.json ./
 
-RUN --mount=type=cache,target=/root/.npm npm ci
+RUN npm ci
 
 COPY . .
 
