@@ -153,7 +153,7 @@ const routes: RouteRecordRaw[] = [
       {
         path: 'stock',
         name: 'StockReport',
-        component: () => import('@/views/reports/stock/index.vue'),
+        component: () => import('@/views/reports/inventory/index.vue'),
         meta: { title: '库存报表', icon: 'DataLine' }
       },
       {

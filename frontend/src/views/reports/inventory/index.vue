@@ -198,6 +198,8 @@
       </el-form>
     </el-card>
 
+    <ReportScopeSummary :items="scopeItems" class="mb-20" />
+
     <el-card class="table-card">
       <template #header>
         <div class="card-header">
@@ -479,12 +481,23 @@
         <el-button type="primary" @click="handleExportDetail">导出详情</el-button>
       </template>
     </el-dialog>
+
+    <ExportConfirmDialog
+      v-model="exportDialogVisible"
+      report-type="库存报表"
+      :scope-items="scopeItems"
+      :data-count="filteredList.length"
+      extra-info="按门店/分类/库存状态口径导出当前库存明细与金额。"
+      @confirm="confirmExport"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
+import ReportScopeSummary from '@/components/report/ReportScopeSummary.vue'
+import ExportConfirmDialog from '@/components/report/ExportConfirmDialog.vue'
 import {
   STOCK_STATUS_CONFIG,
   getStockStatusText,
@@ -543,6 +556,10 @@ const pagination = reactive({
 const viewMode = ref('table')
 const detailDialogVisible = ref(false)
 const currentStock = ref<StockReportRow | null>(null)
+const exportDialogVisible = ref(false)
+
+const storeNameMap: Record<number, string> = { 1: '总店', 2: '分店A', 3: '分店B', 4: '分店C' }
+const categoryNameMap: Record<number, string> = { 1: '办公用品', 2: '清洁用品', 3: '包装材料', 4: '工具' }
 
 const reportList = ref<StockReportRow[]>([
   { id: 1, materialCode: 'HC001', materialId: 1, materialName: 'A4打印纸', specification: '70g/500张', unit: '包', categoryId: 1, categoryName: '办公用品', storeId: 1, storeName: '总店', quantity: 200, lockedQuantity: 20, availableQuantity: 180, safetyStock: 100, avgCost: 25.00, stockValue: 4500, stockStatus: 'normal' },
@@ -616,6 +633,31 @@ const categorySummary = computed<CategorySummaryRow[]>(() => {
     row.statusCounts[item.stockStatus]++
   })
   return Array.from(map.values())
+})
+
+const scopeItems = computed(() => {
+  const items: Array<{ label: string; value: string; tagType?: string }> = []
+  items.push({
+    label: '门店',
+    value: (queryForm.storeId !== undefined && storeNameMap[queryForm.storeId]) || '全部门店',
+    tagType: queryForm.storeId !== undefined ? 'primary' : 'info'
+  })
+  items.push({
+    label: '统计日期',
+    value: queryForm.date || '默认（当前）',
+    tagType: queryForm.date ? 'primary' : 'info'
+  })
+  items.push({
+    label: '分类',
+    value: (queryForm.categoryId !== undefined && categoryNameMap[queryForm.categoryId]) || '全部分类',
+    tagType: queryForm.categoryId !== undefined ? 'primary' : 'info'
+  })
+  items.push({
+    label: '库存状态',
+    value: queryForm.status !== undefined ? getStockStatusText(queryForm.status) : '全部状态',
+    tagType: queryForm.status !== undefined ? 'warning' : 'info'
+  })
+  return items
 })
 
 const formatNumber = (num: number) => {
@@ -725,7 +767,12 @@ const handleReset = () => {
 }
 
 const handleExport = () => {
-  ElMessage.success(`正在导出库存报表，共 ${filteredList.value.length} 条数据...`)
+  exportDialogVisible.value = true
+}
+
+const confirmExport = () => {
+  ElMessage.success(`正在按口径导出库存报表，共 ${filteredList.value.length} 条数据...`)
+  exportDialogVisible.value = false
 }
 
 const handlePrint = () => {
