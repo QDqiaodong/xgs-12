@@ -4,93 +4,67 @@ export interface ConsumptionRecord {
   id: number
   storeId: number
   storeName: string
-  consumableId: number
-  consumableName: string
+  materialId: number
+  materialName: string
   specification: string
   unit: string
+  year: number
+  month: number
   quantity: number
-  unitPrice: number
-  totalAmount: number
-  consumptionMonth: string
+  totalCost: number
   remark?: string
-  operator: string
-  createdAt: string
-  updatedAt: string
+  createTime: string
 }
 
 export interface ConsumptionCreateData {
   storeId: number
-  consumptionMonth: string
-  items: {
-    consumableId: number
-    quantity: number
-    remark?: string
-  }[]
-  remark?: string
-}
-
-export interface ConsumptionUpdateData {
-  items: {
-    id?: number
-    consumableId: number
-    quantity: number
-    remark?: string
-  }[]
+  materialId: number
+  quantity: number
+  unitCost?: number
   remark?: string
 }
 
 export interface ConsumptionQuery {
   storeId?: number
-  consumableId?: number
-  consumptionMonth?: string
-  startMonth?: string
-  endMonth?: string
-  pageNum: number
-  pageSize: number
+  materialId?: number
+  year?: number
+  month?: number
+  current: number
+  size: number
 }
 
 export interface MonthlyConsumptionSummary {
-  consumptionMonth: string
-  totalAmount: number
-  totalQuantity: number
-  storeCount: number
-  itemCount: number
-}
-
-export interface StoreConsumptionSummary {
   storeId: number
   storeName: string
-  totalAmount: number
+  year: number
+  month: number
   totalQuantity: number
-  itemCount: number
+  totalCost: number
+  details: ConsumptionRecord[]
 }
 
 export const consumptionApi = {
-  createConsumption(data: ConsumptionCreateData): Promise<ApiResponse<ConsumptionRecord[]>> {
-    return request.post('/consumption', data)
+  createConsumption(data: ConsumptionCreateData): Promise<ApiResponse<number>> {
+    return request.post('/consumptions', data)
   },
 
-  getMonthlyConsumption(params: ConsumptionQuery): Promise<ApiResponse<PageResponse<MonthlyConsumptionSummary>>> {
-    return request.get('/consumption/monthly', { params })
+  getMonthlyConsumption(storeId: number, year: number, month: number): Promise<ApiResponse<MonthlyConsumptionSummary>> {
+    return request.get('/consumptions/monthly', { params: { storeId, year, month } })
   },
 
-  getStoreConsumption(storeId: number, params: ConsumptionQuery): Promise<ApiResponse<PageResponse<ConsumptionRecord>>> {
-    return request.get(`/consumption/store/${storeId}`, { params })
+  getStoreConsumption(storeId: number): Promise<ApiResponse<ConsumptionRecord[]>> {
+    return request.get(`/consumptions/store/${storeId}`)
   },
 
-  updateConsumption(id: number, data: ConsumptionUpdateData): Promise<ApiResponse<ConsumptionRecord>> {
-    return request.put(`/consumption/${id}`, data)
+  updateConsumption(id: number, data: ConsumptionCreateData): Promise<ApiResponse<void>> {
+    return request.put(`/consumptions/${id}`, data)
   },
 
   deleteConsumption(id: number): Promise<ApiResponse<void>> {
-    return request.delete(`/consumption/${id}`)
-  },
-
-  getConsumptionDetail(id: number): Promise<ApiResponse<ConsumptionRecord>> {
-    return request.get(`/consumption/${id}`)
+    return request.delete(`/consumptions/${id}`)
   },
 
   getConsumptionList(params: ConsumptionQuery): Promise<ApiResponse<PageResponse<ConsumptionRecord>>> {
-    return request.get('/consumption', { params })
+    return request.get('/consumptions', { params })
   }
 }
