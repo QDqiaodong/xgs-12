@@ -90,3 +90,10 @@ data/minio/
 **/release/*.tar.gz
 frontend/package-lock.json
 
+# ====================== 11、本地容器/启动脚本覆盖文件 ======================
+backend/Dockerfile.dev
+backend/Dockerfile.prod
+frontend/Dockerfile.dev
+frontend/Dockerfile.prod
+scripts/check-ports.sh
+start.sh
