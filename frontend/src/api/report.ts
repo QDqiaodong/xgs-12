@@ -194,21 +194,3 @@ export const reportApi = {
     return request.get('/reports/dashboard')
   }
 }
-
-export const getStockStatusText = (status: string): string => {
-  const map: Record<string, string> = {
-    '正常': '正常',
-    '预警': '预警',
-    '短缺': '短缺'
-  }
-  return map[status] || status
-}
-
-export const getStockStatusType = (status: string): string => {
-  const map: Record<string, string> = {
-    '正常': 'success',
-    '预警': 'warning',
-    '短缺': 'danger'
-  }
-  return map[status] || 'info'
-}
