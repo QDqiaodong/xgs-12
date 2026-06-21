@@ -113,7 +113,7 @@
               </div>
               <span>耗材管理</span>
             </div>
-            <div class="action-item" @click="router.push('/reports/inventory')">
+            <div class="action-item" @click="router.push('/reports/stock')">
               <div class="action-icon report">
                 <el-icon :size="24"><DataAnalysis /></el-icon>
               </div>

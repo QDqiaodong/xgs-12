@@ -3,6 +3,7 @@ import { request, ApiResponse } from '@/utils/request'
 export interface LoginParams {
   username: string
   password: string
+  captcha?: string
 }
 
 export interface LoginResult {

@@ -188,17 +188,18 @@ const handleLogin = async () => {
   
   await formRef.value.validate(async (valid) => {
     if (valid) {
-      // if (form.captcha.toLowerCase() !== captchaCode.value) {
-      //   ElMessage.error('验证码错误')
-      //   refreshCaptcha()
-      //   return
-      // }
+      if (form.captcha.toLowerCase() !== captchaCode.value) {
+        ElMessage.error('验证码错误')
+        refreshCaptcha()
+        return
+      }
       
       loading.value = true
       try {
         const res = await authApi.login({
           username: form.username,
-          password: form.password
+          password: form.password,
+          captcha: form.captcha
         })
         
         const { token, userInfo } = transformLoginResult(res.data)

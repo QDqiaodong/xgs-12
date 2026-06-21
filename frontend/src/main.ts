@@ -7,15 +7,20 @@ import * as ElementPlusIconsVue from '@element-plus/icons-vue'
 import App from './App.vue'
 import router from './router'
 import '@/styles/index.scss'
+import { useUserStore } from '@/stores/user'
 
 const app = createApp(App)
+const pinia = createPinia()
 
 for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
   app.component(key, component)
 }
 
-app.use(createPinia())
+app.use(pinia)
 app.use(router)
 app.use(ElementPlus)
+
+const userStore = useUserStore()
+userStore.initUserInfo()
 
 app.mount('#app')

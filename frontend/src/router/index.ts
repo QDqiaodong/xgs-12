@@ -217,27 +217,30 @@ router.beforeEach(async (to, _from, next) => {
 
   const userStore = useUserStore()
   const isLoginPage = to.path === '/login'
-  // 临时绕过登录验证，便于开发预览
-  const hasToken = true
-  if (!userStore.token) {
-    userStore.setToken('mock-token-dev')
-  }
-  if (!userStore.userInfo) {
-    userStore.setUserInfo({
-      id: 1,
-      username: 'admin',
-      realName: '系统管理员',
-      role: 'admin',
-      storeId: 1,
-      email: 'admin@example.com',
-      phone: '13800138000',
-      status: 1
-    })
+  const hasToken = !!userStore.token
+
+  if (!hasToken) {
+    if (!isLoginPage) {
+      next('/login')
+      return
+    }
+    next()
+    return
   }
 
   if (isLoginPage) {
     next('/')
     return
+  }
+
+  if (!userStore.userInfo) {
+    try {
+      await userStore.fetchUserInfo()
+    } catch (error) {
+      userStore.logout()
+      next('/login')
+      return
+    }
   }
 
   next()
