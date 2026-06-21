@@ -5,7 +5,7 @@ services:
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root123456}
-      MYSQL_DATABASE: retail_material_db
+      MYSQL_DATABASE: retail_material
       MYSQL_USER: ${MYSQL_USER:-retail_user}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD:-retail123456}
     ports:
@@ -54,7 +54,7 @@ services:
     restart: always
     environment:
       SPRING_PROFILES_ACTIVE: prod
-      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/retail_material_db?useUnicode=true&characterEncoding=UTF-8&connectionCollation=utf8mb4_unicode_ci&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/retail_material?useUnicode=true&characterEncoding=UTF-8&connectionCollation=utf8mb4_unicode_ci&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
       SPRING_DATASOURCE_USERNAME: ${MYSQL_USER:-retail_user}
       SPRING_DATASOURCE_PASSWORD: ${MYSQL_PASSWORD:-retail123456}
       SPRING_DATA_REDIS_HOST: redis

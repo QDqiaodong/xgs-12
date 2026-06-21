@@ -1,20 +1,23 @@
-CREATE DATABASE IF NOT EXISTS retail_material_db 
+CREATE DATABASE IF NOT EXISTS retail_material 
 DEFAULT CHARACTER SET utf8mb4 
 COLLATE utf8mb4_unicode_ci;
 
-USE retail_material_db;
+USE retail_material;
 
 CREATE TABLE `store` (
   `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键ID',
   `store_code` varchar(50) NOT NULL COMMENT '门店编码',
   `store_name` varchar(100) NOT NULL COMMENT '门店名称',
-  `store_type` varchar(20) NOT NULL COMMENT '门店类型：tea_milk/automotive/retail',
+  `store_type` varchar(20) NOT NULL COMMENT '门店类型：tea_milk/automotive/retail/warehouse',
   `address` varchar(200) DEFAULT NULL COMMENT '门店地址',
   `contact_person` varchar(50) DEFAULT NULL COMMENT '联系人',
   `contact_phone` varchar(20) DEFAULT NULL COMMENT '联系电话',
   `status` tinyint NOT NULL DEFAULT 1 COMMENT '状态：0禁用 1启用',
   `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  `create_by` bigint DEFAULT NULL COMMENT '创建人',
+  `update_by` bigint DEFAULT NULL COMMENT '更新人',
+  `deleted` tinyint NOT NULL DEFAULT 0 COMMENT '删除标记: 0-未删除, 1-已删除',
   PRIMARY KEY (`id`),
   UNIQUE KEY `uk_store_code` (`store_code`),
   KEY `idx_store_type` (`store_type`),
@@ -33,6 +36,9 @@ CREATE TABLE `sys_user` (
   `status` tinyint NOT NULL DEFAULT 1 COMMENT '状态：0禁用 1启用',
   `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  `create_by` bigint DEFAULT NULL COMMENT '创建人',
+  `update_by` bigint DEFAULT NULL COMMENT '更新人',
+  `deleted` tinyint NOT NULL DEFAULT 0 COMMENT '删除标记: 0-未删除, 1-已删除',
   PRIMARY KEY (`id`),
   UNIQUE KEY `uk_username` (`username`),
   KEY `idx_store_id` (`store_id`),
@@ -54,6 +60,9 @@ CREATE TABLE `material` (
   `status` tinyint NOT NULL DEFAULT 1 COMMENT '状态：0禁用 1正常 2预警 3过期',
   `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  `create_by` bigint DEFAULT NULL COMMENT '创建人',
+  `update_by` bigint DEFAULT NULL COMMENT '更新人',
+  `deleted` tinyint NOT NULL DEFAULT 0 COMMENT '删除标记: 0-未删除, 1-已删除',
   PRIMARY KEY (`id`),
   UNIQUE KEY `uk_material_code` (`material_code`),
   KEY `idx_category` (`category`),
@@ -184,10 +193,10 @@ CREATE TABLE `stock_alert` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='库存预警表';
 
 INSERT INTO `sys_user` (`username`, `password`, `real_name`, `role`, `status`) VALUES
-('admin', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iAt6Z5EH', '系统管理员', 'admin', 1),
-('warehouse', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iAt6Z5EH', '总部库管', 'warehouse', 1),
-('store_manager', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iAt6Z5EH', '门店店长', 'store_manager', 1),
-('finance', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iAt6Z5EH', '财务人员', 'finance', 1);
+('admin', '$2a$10$7JB720yubVSZvUI0rEqK/.VqGOZTH.ulu33dHOiBE8ByOhJIrdAu2', '系统管理员', 'ADMIN', 1),
+('warehouse', '$2a$10$7JB720yubVSZvUI0rEqK/.VqGOZTH.ulu33dHOiBE8ByOhJIrdAu2', '总部库管', 'WAREHOUSE', 1),
+('store_manager', '$2a$10$7JB720yubVSZvUI0rEqK/.VqGOZTH.ulu33dHOiBE8ByOhJIrdAu2', '门店店长', 'STORE_MANAGER', 1),
+('finance', '$2a$10$7JB720yubVSZvUI0rEqK/.VqGOZTH.ulu33dHOiBE8ByOhJIrdAu2', '财务人员', 'FINANCE', 1);
 
 INSERT INTO `store` (`id`, `store_code`, `store_name`, `store_type`, `address`, `contact_person`, `contact_phone`, `status`) VALUES
 (0, 'HQ001', '总部总仓', 'warehouse', '总部地址', '总仓管理员', '13800138000', 1);

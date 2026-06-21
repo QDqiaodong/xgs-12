@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS sys_user (
     real_name VARCHAR(50) COMMENT '真实姓名',
     phone VARCHAR(20) COMMENT '手机号',
     email VARCHAR(100) COMMENT '邮箱',
-    role VARCHAR(20) DEFAULT 'USER' COMMENT '角色: ADMIN-管理员, MANAGER-店长, USER-普通用户',
+    role VARCHAR(20) DEFAULT 'USER' COMMENT '角色: ADMIN-管理员, WAREHOUSE-库管, STORE_MANAGER-店长, FINANCE-财务',
     status TINYINT DEFAULT 1 COMMENT '状态: 0-禁用, 1-启用',
     store_id BIGINT COMMENT '所属门店ID',
     create_time DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
@@ -30,6 +30,7 @@ CREATE TABLE IF NOT EXISTS store (
     id BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '主键ID',
     store_code VARCHAR(50) NOT NULL COMMENT '门店编码',
     store_name VARCHAR(100) NOT NULL COMMENT '门店名称',
+    store_type VARCHAR(20) NOT NULL COMMENT '门店类型: tea_milk/automotive/retail/warehouse',
     address VARCHAR(255) COMMENT '门店地址',
     contact_person VARCHAR(50) COMMENT '联系人',
     contact_phone VARCHAR(20) COMMENT '联系电话',
@@ -190,12 +191,13 @@ CREATE TABLE IF NOT EXISTS inventory_log (
 
 -- 初始化管理员账号 (密码: admin123)
 INSERT INTO sys_user (username, password, real_name, role, status) VALUES 
-('admin', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iAt6Z5EH', '系统管理员', 'ADMIN', 1);
+('admin', '$2a$10$7JB720yubVSZvUI0rEqK/.VqGOZTH.ulu33dHOiBE8ByOhJIrdAu2', '系统管理员', 'ADMIN', 1);
 
 -- 初始化示例门店
-INSERT INTO store (store_code, store_name, address, contact_person, contact_phone, status) VALUES 
-('S001', '总店', '北京市朝阳区xxx街道', '张经理', '13800138001', 1),
-('S002', '分店1', '北京市海淀区xxx街道', '李经理', '13800138002', 1);
+INSERT INTO store (store_code, store_name, store_type, address, contact_person, contact_phone, status) VALUES 
+('ST001', '奶茶1号店', 'tea_milk', '北京市朝阳区xxx路xxx号', '张三', '13800138001', 1),
+('ST002', '汽修中心店', 'automotive', '北京市海淀区xxx路xxx号', '李四', '13800138002', 1),
+('ST003', '零售旗舰店', 'retail', '北京市西城区xxx路xxx号', '王五', '13800138003', 1);
 
 -- 初始化示例耗材分类
 INSERT INTO material_category (category_code, category_name, parent_id, sort_order, status) VALUES 

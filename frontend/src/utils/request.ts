@@ -68,10 +68,11 @@ export interface ApiResponse<T = any> {
 }
 
 export interface PageResponse<T = any> {
-  list: T[]
+  records: T[]
   total: number
-  pageNum: number
-  pageSize: number
+  size: number
+  current: number
+  pages: number
 }
 
 export const request = {

@@ -4,7 +4,7 @@
       <el-form :model="searchForm" inline class="search-form">
         <el-form-item label="门店编码">
           <el-input
-            v-model="searchForm.code"
+            v-model="searchForm.storeCode"
             placeholder="请输入门店编码"
             clearable
             @keyup.enter="handleSearch"
@@ -12,17 +12,18 @@
         </el-form-item>
         <el-form-item label="门店名称">
           <el-input
-            v-model="searchForm.name"
+            v-model="searchForm.storeName"
             placeholder="请输入门店名称"
             clearable
             @keyup.enter="handleSearch"
           />
         </el-form-item>
         <el-form-item label="门店类型">
-          <el-select v-model="searchForm.type" placeholder="请选择类型" clearable>
-            <el-option label="直营店" value="direct" />
-            <el-option label="加盟店" value="franchise" />
-            <el-option label="合作店" value="partner" />
+          <el-select v-model="searchForm.storeType" placeholder="请选择类型" clearable>
+            <el-option label="奶茶店" value="tea_milk" />
+            <el-option label="汽修店" value="automotive" />
+            <el-option label="零售店" value="retail" />
+            <el-option label="仓库" value="warehouse" />
           </el-select>
         </el-form-item>
         <el-form-item label="状态">
@@ -68,18 +69,18 @@
         stripe
         @sort-change="handleSortChange"
       >
-        <el-table-column prop="code" label="门店编码" width="120" sortable="custom" />
-        <el-table-column prop="name" label="门店名称" min-width="150" />
-        <el-table-column prop="type" label="门店类型" width="100" align="center">
+        <el-table-column prop="storeCode" label="门店编码" width="120" sortable="custom" />
+        <el-table-column prop="storeName" label="门店名称" min-width="150" />
+        <el-table-column prop="storeType" label="门店类型" width="100" align="center">
           <template #default="{ row }">
-            <el-tag :type="getTypeTagType(row.type)" size="small">
-              {{ getTypeText(row.type) }}
+            <el-tag :type="getTypeTagType(row.storeType)" size="small">
+              {{ getTypeText(row.storeType) }}
             </el-tag>
           </template>
         </el-table-column>
         <el-table-column prop="address" label="地址" min-width="200" show-overflow-tooltip />
-        <el-table-column prop="contact" label="联系人" width="100" />
-        <el-table-column prop="phone" label="联系电话" width="130" />
+        <el-table-column prop="contactPerson" label="联系人" width="100" />
+        <el-table-column prop="contactPhone" label="联系电话" width="130" />
         <el-table-column prop="status" label="状态" width="100" align="center">
           <template #default="{ row }">
             <el-switch
@@ -92,9 +93,9 @@
             />
           </template>
         </el-table-column>
-        <el-table-column prop="createdAt" label="创建时间" width="160" sortable="custom">
+        <el-table-column prop="createTime" label="创建时间" width="160" sortable="custom">
           <template #default="{ row }">
-            {{ formatDate(row.createdAt) }}
+            {{ formatDate(row.createTime) }}
           </template>
         </el-table-column>
         <el-table-column label="操作" width="180" align="center" fixed="right">
@@ -143,23 +144,24 @@
       >
         <el-row :gutter="20">
           <el-col :span="12">
-            <el-form-item label="门店编码" prop="code">
-              <el-input v-model="formData.code" placeholder="请输入门店编码" />
+            <el-form-item label="门店编码" prop="storeCode">
+              <el-input v-model="formData.storeCode" placeholder="请输入门店编码" />
             </el-form-item>
           </el-col>
           <el-col :span="12">
-            <el-form-item label="门店名称" prop="name">
-              <el-input v-model="formData.name" placeholder="请输入门店名称" />
+            <el-form-item label="门店名称" prop="storeName">
+              <el-input v-model="formData.storeName" placeholder="请输入门店名称" />
             </el-form-item>
           </el-col>
         </el-row>
         <el-row :gutter="20">
           <el-col :span="12">
-            <el-form-item label="门店类型" prop="type">
-              <el-select v-model="formData.type" placeholder="请选择门店类型" style="width: 100%">
-                <el-option label="直营店" value="direct" />
-                <el-option label="加盟店" value="franchise" />
-                <el-option label="合作店" value="partner" />
+            <el-form-item label="门店类型" prop="storeType">
+              <el-select v-model="formData.storeType" placeholder="请选择门店类型" style="width: 100%">
+                <el-option label="奶茶店" value="tea_milk" />
+                <el-option label="汽修店" value="automotive" />
+                <el-option label="零售店" value="retail" />
+                <el-option label="仓库" value="warehouse" />
               </el-select>
             </el-form-item>
           </el-col>
@@ -177,24 +179,16 @@
         </el-form-item>
         <el-row :gutter="20">
           <el-col :span="12">
-            <el-form-item label="联系人" prop="contact">
-              <el-input v-model="formData.contact" placeholder="请输入联系人" />
+            <el-form-item label="联系人" prop="contactPerson">
+              <el-input v-model="formData.contactPerson" placeholder="请输入联系人" />
             </el-form-item>
           </el-col>
           <el-col :span="12">
-            <el-form-item label="联系电话" prop="phone">
-              <el-input v-model="formData.phone" placeholder="请输入联系电话" />
+            <el-form-item label="联系电话" prop="contactPhone">
+              <el-input v-model="formData.contactPhone" placeholder="请输入联系电话" />
             </el-form-item>
           </el-col>
         </el-row>
-        <el-form-item label="备注" prop="remark">
-          <el-input
-            v-model="formData.remark"
-            type="textarea"
-            :rows="3"
-            placeholder="请输入备注"
-          />
-        </el-form-item>
       </el-form>
       <template #footer>
         <span class="dialog-footer">
@@ -209,10 +203,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import type { FormInstance, FormRules } from 'element-plus'
 import dayjs from 'dayjs'
+import { storeApi, type Store } from '@/api/store'
 
 const formRef = ref<FormInstance>()
 const loading = ref(false)
@@ -220,16 +215,16 @@ const submitLoading = ref(false)
 const dialogVisible = ref(false)
 
 const searchForm = reactive({
-  code: '',
-  name: '',
-  type: '',
+  storeCode: '',
+  storeName: '',
+  storeType: '',
   status: undefined as number | undefined
 })
 
 const pagination = reactive({
   pageNum: 1,
   pageSize: 10,
-  total: 50
+  total: 0
 })
 
 const dialogType = ref<'add' | 'edit' | 'view'>('add')
@@ -245,46 +240,54 @@ const dialogTitle = computed(() => {
 
 const formData = reactive({
   id: 0,
-  code: '',
-  name: '',
-  type: '',
+  storeCode: '',
+  storeName: '',
+  storeType: '',
   address: '',
-  contact: '',
-  phone: '',
-  status: 1,
-  remark: ''
+  contactPerson: '',
+  contactPhone: '',
+  status: 1
 })
 
 const formRules: FormRules = {
-  code: [
+  storeCode: [
     { required: true, message: '请输入门店编码', trigger: 'blur' },
     { pattern: /^[A-Za-z0-9]+$/, message: '编码只能包含字母和数字', trigger: 'blur' }
   ],
-  name: [
+  storeName: [
     { required: true, message: '请输入门店名称', trigger: 'blur' },
     { min: 2, max: 50, message: '名称长度在 2 到 50 个字符', trigger: 'blur' }
   ],
-  type: [{ required: true, message: '请选择门店类型', trigger: 'change' }],
+  storeType: [{ required: true, message: '请选择门店类型', trigger: 'change' }],
   address: [{ required: true, message: '请输入门店地址', trigger: 'blur' }],
-  contact: [{ required: true, message: '请输入联系人', trigger: 'blur' }],
-  phone: [
+  contactPerson: [{ required: true, message: '请输入联系人', trigger: 'blur' }],
+  contactPhone: [
     { required: true, message: '请输入联系电话', trigger: 'blur' },
     { pattern: /^1[3-9]\d{9}$/, message: '请输入正确的手机号码', trigger: 'blur' }
   ]
 }
 
-const tableData = ref([
-  { id: 1, code: 'MD001', name: '总店', type: 'direct', address: '北京市朝阳区建国路88号', contact: '张经理', phone: '13800138001', status: 1, createdAt: '2024-01-01 10:00:00' },
-  { id: 2, code: 'MD002', name: '朝阳分店', type: 'direct', address: '北京市朝阳区三里屯路19号', contact: '李经理', phone: '13800138002', status: 1, createdAt: '2024-01-05 14:30:00' },
-  { id: 3, code: 'MD003', name: '海淀分店', type: 'franchise', address: '北京市海淀区中关村大街1号', contact: '王经理', phone: '13800138003', status: 1, createdAt: '2024-01-10 09:15:00' },
-  { id: 4, code: 'MD004', name: '西城分店', type: 'franchise', address: '北京市西城区西单北大街120号', contact: '赵经理', phone: '13800138004', status: 1, createdAt: '2024-01-15 16:45:00' },
-  { id: 5, code: 'MD005', name: '东城分店', type: 'partner', address: '北京市东城区王府井大街255号', contact: '刘经理', phone: '13800138005', status: 0, createdAt: '2024-01-20 11:20:00' },
-  { id: 6, code: 'MD006', name: '丰台分店', type: 'direct', address: '北京市丰台区丰台路75号', contact: '陈经理', phone: '13800138006', status: 1, createdAt: '2024-02-01 08:30:00' },
-  { id: 7, code: 'MD007', name: '通州分店', type: 'franchise', address: '北京市通州区新华大街88号', contact: '周经理', phone: '13800138007', status: 1, createdAt: '2024-02-10 13:00:00' },
-  { id: 8, code: 'MD008', name: '大兴分店', type: 'partner', address: '北京市大兴区黄村镇兴华大街12号', contact: '吴经理', phone: '13800138008', status: 1, createdAt: '2024-02-15 15:40:00' },
-  { id: 9, code: 'MD009', name: '昌平分店', type: 'direct', address: '北京市昌平区回龙观东大街108号', contact: '郑经理', phone: '13800138009', status: 1, createdAt: '2024-02-20 10:10:00' },
-  { id: 10, code: 'MD010', name: '顺义分店', type: 'franchise', address: '北京市顺义区府前街56号', contact: '孙经理', phone: '13800138010', status: 0, createdAt: '2024-02-25 17:25:00' }
-])
+const tableData = ref<Store[]>([])
+
+const fetchList = async () => {
+  loading.value = true
+  try {
+    const res = await storeApi.getList({
+      storeCode: searchForm.storeCode,
+      storeName: searchForm.storeName,
+      storeType: searchForm.storeType,
+      status: searchForm.status,
+      current: pagination.pageNum,
+      size: pagination.pageSize
+    })
+    tableData.value = res.data.records || []
+    pagination.total = Number(res.data.total) || 0
+  } catch (e) {
+    console.error(e)
+  } finally {
+    loading.value = false
+  }
+}
 
 const formatDate = (date: string) => {
   return dayjs(date).format('YYYY-MM-DD HH:mm')
@@ -292,64 +295,62 @@ const formatDate = (date: string) => {
 
 const getTypeText = (type: string) => {
   const map: Record<string, string> = {
-    direct: '直营店',
-    franchise: '加盟店',
-    partner: '合作店'
+    tea_milk: '奶茶店',
+    automotive: '汽修店',
+    retail: '零售店',
+    warehouse: '仓库'
   }
   return map[type] || type
 }
 
 const getTypeTagType = (type: string) => {
-  const map: Record<string, string> = {
-    direct: 'primary',
-    franchise: 'success',
-    partner: 'warning'
+  const map: Record<string, 'primary' | 'success' | 'warning' | 'info' | 'danger'> = {
+    tea_milk: 'primary',
+    automotive: 'success',
+    retail: 'warning',
+    warehouse: 'info'
   }
-  return map[type] || 'info'
+  return map[type] || 'info' as const
 }
 
 const handleSearch = () => {
   pagination.pageNum = 1
-  loading.value = true
-  setTimeout(() => {
-    loading.value = false
-  }, 500)
+  fetchList()
 }
 
 const handleReset = () => {
-  searchForm.code = ''
-  searchForm.name = ''
-  searchForm.type = ''
+  searchForm.storeCode = ''
+  searchForm.storeName = ''
+  searchForm.storeType = ''
   searchForm.status = undefined
   pagination.pageNum = 1
-  handleSearch()
+  fetchList()
 }
 
 const handleSortChange = ({ prop, order }: any) => {
   console.log('sort:', prop, order)
-  handleSearch()
+  fetchList()
 }
 
 const handleSizeChange = (size: number) => {
   pagination.pageSize = size
-  handleSearch()
+  fetchList()
 }
 
 const handleCurrentChange = (page: number) => {
   pagination.pageNum = page
-  handleSearch()
+  fetchList()
 }
 
 const resetForm = () => {
   formData.id = 0
-  formData.code = ''
-  formData.name = ''
-  formData.type = ''
+  formData.storeCode = ''
+  formData.storeName = ''
+  formData.storeType = ''
   formData.address = ''
-  formData.contact = ''
-  formData.phone = ''
+  formData.contactPerson = ''
+  formData.contactPhone = ''
   formData.status = 1
-  formData.remark = ''
   formRef.value?.resetFields()
 }
 
@@ -361,51 +362,60 @@ const handleAdd = () => {
 
 const handleView = (row: any) => {
   dialogType.value = 'view'
-  Object.assign(formData, row)
+  Object.assign(formData, row as Store)
   dialogVisible.value = true
 }
 
 const handleEdit = (row: any) => {
   dialogType.value = 'edit'
-  Object.assign(formData, row)
+  Object.assign(formData, row as Store)
   dialogVisible.value = true
 }
 
 const handleDelete = (row: any) => {
+  const store = row as Store
   ElMessageBox.confirm(
-    `确定要删除门店"${row.name}"吗？`,
+    `确定要删除门店"${store.storeName}"吗？`,
     '删除确认',
     {
       confirmButtonText: '确定',
       cancelButtonText: '取消',
       type: 'warning'
     }
-  ).then(() => {
-    const index = tableData.value.findIndex(item => item.id === row.id)
-    if (index > -1) {
-      tableData.value.splice(index, 1)
-      pagination.total -= 1
+  ).then(async () => {
+    try {
+      await storeApi.delete(store.id)
+      ElMessage.success('删除成功')
+      fetchList()
+    } catch (e) {
+      console.error(e)
     }
-    ElMessage.success('删除成功')
   }).catch(() => {})
 }
 
-const handleStatusChange = (row: any) => {
-  const statusText = row.status === 1 ? '营业中' : '已停业'
-  ElMessage.success(`门店"${row.name}"状态已更新为"${statusText}"`)
+const handleStatusChange = async (row: any) => {
+  const store = row as Store
+  try {
+    await storeApi.update(store.id, { status: store.status })
+    const statusText = store.status === 1 ? '营业中' : '已停业'
+    ElMessage.success(`门店"${store.storeName}"状态已更新为"${statusText}"`)
+  } catch (e) {
+    console.error(e)
+    row.status = row.status === 1 ? 0 : 1
+  }
 }
 
 const handleExport = () => {
   const headers = ['门店编码', '门店名称', '门店类型', '地址', '联系人', '联系电话', '状态', '创建时间']
   const rows = tableData.value.map(item => [
-    item.code,
-    item.name,
-    getTypeText(item.type),
+    item.storeCode,
+    item.storeName,
+    getTypeText(item.storeType),
     item.address,
-    item.contact,
-    item.phone,
+    item.contactPerson,
+    item.contactPhone,
     item.status === 1 ? '营业中' : '已停业',
-    item.createdAt
+    item.createTime
   ])
   
   let csvContent = '\uFEFF'
@@ -427,35 +437,46 @@ const handleExport = () => {
 const handleSubmit = async () => {
   if (!formRef.value) return
   
-  await formRef.value.validate((valid) => {
+  await formRef.value.validate(async (valid) => {
     if (valid) {
       submitLoading.value = true
-      setTimeout(() => {
+      try {
         if (dialogType.value === 'add') {
-          const newItem = {
-            ...formData,
-            id: tableData.value.length + 1,
-            createdAt: dayjs().format('YYYY-MM-DD HH:mm:ss')
-          }
-          tableData.value.unshift(newItem)
-          pagination.total += 1
+          await storeApi.create({
+            storeCode: formData.storeCode,
+            storeName: formData.storeName,
+            storeType: formData.storeType,
+            address: formData.address,
+            contactPerson: formData.contactPerson,
+            contactPhone: formData.contactPhone,
+            status: formData.status
+          })
           ElMessage.success('新增成功')
         } else {
-          const index = tableData.value.findIndex(item => item.id === formData.id)
-          if (index > -1) {
-            tableData.value[index] = {
-              ...tableData.value[index],
-              ...formData
-            }
-          }
+          await storeApi.update(formData.id, {
+            storeName: formData.storeName,
+            storeType: formData.storeType,
+            address: formData.address,
+            contactPerson: formData.contactPerson,
+            contactPhone: formData.contactPhone,
+            status: formData.status
+          })
           ElMessage.success('编辑成功')
         }
-        submitLoading.value = false
         dialogVisible.value = false
-      }, 500)
+        fetchList()
+      } catch (e) {
+        console.error(e)
+      } finally {
+        submitLoading.value = false
+      }
     }
   })
 }
+
+onMounted(() => {
+  fetchList()
+})
 </script>
 
 <style scoped lang="scss">

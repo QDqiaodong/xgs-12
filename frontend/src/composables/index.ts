@@ -66,10 +66,10 @@ export const useTable = <T extends Record<string, any>>(
     try {
       const res = await fetchFn({
         ...searchForm.value,
-        pageNum: pageNum.value,
-        pageSize: pageSize.value
+        current: pageNum.value,
+        size: pageSize.value
       })
-      tableData.value = res.data.list
+      tableData.value = res.data.records
       total.value = res.data.total
     } catch (error) {
       console.error('Failed to fetch data:', error)
