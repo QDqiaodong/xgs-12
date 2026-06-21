@@ -1,5 +1,99 @@
 import { request, ApiResponse } from '@/utils/request'
 
+export type StockStatusType = 'normal' | 'warning' | 'shortage' | 'negative'
+
+export interface StockStatusConfig {
+  status: StockStatusType
+  label: string
+  color: string
+  bgColor: string
+  tagType: '' | 'success' | 'warning' | 'danger' | 'info'
+  iconName: string
+}
+
+export const STOCK_STATUS_CONFIG: Record<StockStatusType, StockStatusConfig> = {
+  normal: {
+    status: 'normal',
+    label: '正常',
+    color: '#059669',
+    bgColor: '#ECFDF5',
+    tagType: 'success',
+    iconName: 'CircleCheck'
+  },
+  warning: {
+    status: 'warning',
+    label: '预警',
+    color: '#F59E0B',
+    bgColor: '#FFFBEB',
+    tagType: 'warning',
+    iconName: 'Warning'
+  },
+  shortage: {
+    status: 'shortage',
+    label: '短缺',
+    color: '#DC2626',
+    bgColor: '#FEF2F2',
+    tagType: 'danger',
+    iconName: 'WarningFilled'
+  },
+  negative: {
+    status: 'negative',
+    label: '负库存',
+    color: '#7C3AED',
+    bgColor: '#F5F3FF',
+    tagType: 'danger',
+    iconName: 'CircleCloseFilled'
+  }
+}
+
+export const getStockStatusConfig = (status: string | StockStatusType): StockStatusConfig => {
+  const normalized = String(status).toLowerCase()
+  const keyMap: Record<string, StockStatusType> = {
+    'normal': 'normal',
+    'warning': 'warning',
+    'shortage': 'shortage',
+    'negative': 'negative',
+    '正常': 'normal',
+    '预警': 'warning',
+    '短缺': 'shortage',
+    '负库存': 'negative'
+  }
+  const key = keyMap[normalized] || 'normal'
+  return STOCK_STATUS_CONFIG[key]
+}
+
+export const getStockStatusText = (status: string | StockStatusType): string => {
+  return getStockStatusConfig(status).label
+}
+
+export const getStockStatusType = (status: string | StockStatusType): string => {
+  return getStockStatusConfig(status).tagType
+}
+
+export const getStockStatusColor = (status: string | StockStatusType): string => {
+  return getStockStatusConfig(status).color
+}
+
+export const getStockStatusBgColor = (status: string | StockStatusType): string => {
+  return getStockStatusConfig(status).bgColor
+}
+
+export const getStockStatusIcon = (status: string | StockStatusType): string => {
+  return getStockStatusConfig(status).iconName
+}
+
+export const calcStockStatus = (
+  quantity: number,
+  safetyStock: number = 0,
+  availableQuantity?: number
+): StockStatusType => {
+  const qty = availableQuantity !== undefined ? availableQuantity : quantity
+  if (qty < 0) return 'negative'
+  if (qty === 0) return 'shortage'
+  if (safetyStock > 0 && qty <= safetyStock) return 'warning'
+  return 'normal'
+}
+
 export interface ReportQuery {
   storeId?: number
   materialId?: number
